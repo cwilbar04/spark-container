@@ -1,2 +1,4 @@
 pandas
 pyspark
+pytest
+pylint
