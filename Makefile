@@ -7,7 +7,7 @@ test:
 	python -m pytest -vv
 
 lint:
-	pylint --disable=R,C
+	pylint --disable=R,C tests
 
 venv_create: 
 	python -m venv ..\.venv
