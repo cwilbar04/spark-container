@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+  <script type="text/javascript" src="{{ url_for('static', filename='scripts.js') }}"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <title>Home</title>
+</head>
+<body>
+  <ul>
+    <li><a href="{{ url_for('home')}}">Home Page</a></li>
+    <li><a class="active" href="{{ url_for('InsertText')}}">Insert Text</a></li>
+    <li style="float: right;"><a href="https://github.com/cwilbar04/spark-container">Github</a></li>
+	</ul>
+
+    <br><br><br><br>
+    <h3>The results are in and...</h3>
+
+    <script>
+    var output = '{{output}}'
+    document.body.innerHTML+=output
+    </script> 
+  
+</body>
+</html>

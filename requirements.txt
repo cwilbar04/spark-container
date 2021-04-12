@@ -1,4 +1,8 @@
+wheel
+notebook
 pandas
 pyspark
 pytest
 pylint
+google-cloud-language
+flask
