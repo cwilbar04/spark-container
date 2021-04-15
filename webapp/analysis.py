@@ -16,3 +16,4 @@ def sentiment_analysis(text):
 if __name__ == '__main__':
     score = sentiment_analysis(u"Hello, world!")
     print(score)
+    
