@@ -17,4 +17,7 @@ venv_activate:
 
 venv: venv_create venv_activate
 
+spark_notebook:
+	docker run -it --rm -p 8888:8888 -v ${pwd}/data_wrangling:/home/jovyan/work jupyter/pyspark-notebook
+
 all: install lint test
