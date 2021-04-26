@@ -1,0 +1,7 @@
+wheel
+numpy
+notebook
+jupyterlab
+pandas
+pyarrow
+findspark

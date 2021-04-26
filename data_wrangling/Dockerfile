@@ -1,0 +1,92 @@
+FROM ubuntu:latest
+
+EXPOSE 8888
+# # Install OpenJDK 8
+# RUN \
+#     apt-get update && \
+#     apt-get install -y openjdk-11-jdk && \
+#     rm -rf /var/lib/apt/lists/*
+# USER root
+# Install Python
+RUN \
+    apt-get update && \
+    apt-get install -y python3.8 python3-pip && \
+    rm -rf /var/lib/apt/lists/*
+
+
+
+# Install Spark - code modified from https://github.com/jupyter/docker-stacks/blob/master/pyspark-notebook/Dockerfile
+# Spark dependencies
+# Default values can be overridden at build time
+# (ARGS are in lower case to distinguish them from ENV)
+ARG spark_version="3.1.1"
+ARG hadoop_version="3.2"
+ARG spark_checksum="E90B31E58F6D95A42900BA4D288261D71F6C19FA39C1CB71862B792D1B5564941A320227F6AB0E09D946F16B8C1969ED2DEA2A369EC8F9D2D7099189234DE1BE"
+ARG openjdk_version="11"
+
+ENV APACHE_SPARK_VERSION="${spark_version}" \
+    HADOOP_VERSION="${hadoop_version}" \
+    HADOOP_MAJOR_VERSION="3"
+
+
+RUN apt-get -y update && \
+    apt-get install --no-install-recommends -y \
+    tini \
+    wget \
+    "openjdk-${openjdk_version}-jre-headless" \
+    ca-certificates-java && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Spark installation
+WORKDIR /tmp
+# Using the preferred mirror to download Spark
+# hadolint ignore=SC2046
+RUN wget -q $(wget -qO- https://www.apache.org/dyn/closer.lua/spark/spark-${APACHE_SPARK_VERSION}/spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz\?as_json | \
+    python3 -c "import sys, json; content=json.load(sys.stdin); print(content['preferred']+content['path_info'])") && \
+    echo "${spark_checksum} *spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz" | sha512sum -c - && \
+    tar xzf "spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz" -C /usr/local --owner root --group root --no-same-owner && \
+    rm "spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz"
+
+WORKDIR /usr/local
+
+# Configure Spark
+ENV SPARK_HOME=/usr/local/spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}
+ENV SPARK_OPTS="--driver-java-options=-Xms1024M --driver-java-options=-Xmx4096M --driver-java-options=-Dlog4j.logLevel=info" \
+    PATH=$PATH:$SPARK_HOME/bin
+
+
+
+WORKDIR /tmp
+# Install Required Python Packages
+COPY requirements.txt requirements.txt
+RUN \
+    pip3 install --upgrade pip && \
+    pip3 install -r requirements.txt
+
+
+# Create user so not executing as root
+ARG user_id='pitfox'
+RUN useradd -ms /bin/bash $user_id
+USER $user_id
+WORKDIR /home/$user_id
+RUN mkdir data
+
+USER root
+# Add Google Cloud Storage Connectivity
+WORKDIR $SPARK_HOME/conf
+ADD https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-latest-hadoop${HADOOP_MAJOR_VERSION}.jar $SPARK_HOME/jars
+ARG key_file_path="/home/pitfox/data/spark-container-dev-f5d53ab2439c.json"
+ENV GOOGLE_APPLICATION_CREDENTIALS=${key_file_path}
+RUN touch $SPARK_HOME/conf/spark-defaults.conf && \
+    echo spark.hadoop.google.cloud.auth.service.account.enable       true >> spark-defaults.conf && \ 
+    echo spark.hadoop.google.cloud.auth.service.account.json.keyfile        ${key_file_path}>> spark-defaults.conf && \
+    echo spark.hadoop.fs.AbstractFileSystem.gs.impl     com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS >> spark-defaults.conf
+
+USER $USER_ID
+# Define working directory
+WORKDIR /home/$user_id/data
+
+# Define default command
+# Configure container startup
+ENTRYPOINT ["tini", "-g", "--"]
+CMD ["bash"]
