@@ -7,10 +7,11 @@ EXPOSE 8888
 #     apt-get install -y openjdk-11-jdk && \
 #     rm -rf /var/lib/apt/lists/*
 # USER root
+
 # Install Python
 RUN \
     apt-get update && \
-    apt-get install -y python3.8 python3-pip && \
+    apt-get install -y python3.8 python3-pip curl && \
     rm -rf /var/lib/apt/lists/*
 
 
@@ -22,7 +23,7 @@ RUN \
 ARG spark_version="3.1.1"
 ARG hadoop_version="3.2"
 ARG spark_checksum="E90B31E58F6D95A42900BA4D288261D71F6C19FA39C1CB71862B792D1B5564941A320227F6AB0E09D946F16B8C1969ED2DEA2A369EC8F9D2D7099189234DE1BE"
-ARG openjdk_version="11"
+ARG openjdk_version="14"
 
 ENV APACHE_SPARK_VERSION="${spark_version}" \
     HADOOP_VERSION="${hadoop_version}" \
@@ -44,15 +45,25 @@ WORKDIR /tmp
 RUN wget -q $(wget -qO- https://www.apache.org/dyn/closer.lua/spark/spark-${APACHE_SPARK_VERSION}/spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz\?as_json | \
     python3 -c "import sys, json; content=json.load(sys.stdin); print(content['preferred']+content['path_info'])") && \
     echo "${spark_checksum} *spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz" | sha512sum -c - && \
-    tar xzf "spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz" -C /usr/local --owner root --group root --no-same-owner && \
+    tar xzf "spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz" -C /opt --owner root --group root --no-same-owner && \
+    mv /opt/spark-${SPARK_VERSION}-bin-hadoop${HADOOP_VERSION_SHORT} /opt/spark \
     rm "spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz"
 
-WORKDIR /usr/local
-
 # Configure Spark
-ENV SPARK_HOME=/usr/local/spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}
-ENV SPARK_OPTS="--driver-java-options=-Xms1024M --driver-java-options=-Xmx4096M --driver-java-options=-Dlog4j.logLevel=info" \
-    PATH=$PATH:$SPARK_HOME/bin
+ENV SPARK_HOME=/opt/spark \
+    PATH=$PATH:$SPARK_HOME/bin \
+    PYSPARK_PYTHON=python3
+
+# HADOOP
+
+ENV HADOOP_HOME /usr/hadoop-$HADOOP_VERSION
+ENV HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
+ENV PATH $PATH:$HADOOP_HOME/bin
+RUN curl -sL --retry 3 \
+    "http://archive.apache.org/dist/hadoop/common/hadoop-$HADOOP_VERSION/hadoop-$HADOOP_VERSION.tar.gz" \
+    | gunzip \
+    | tar -x -C /usr/ && \
+    rm -rf $HADOOP_HOME/share/doc
 
 
 
