@@ -20,6 +20,16 @@ venv: venv_create venv_activate
 data_wrangling_container_build:
 	docker build -t spark-notebook data_wrangling
 
+distributed_spark_build:
+	docker build -t base distributed-spark\base
+	docker build -t jupyterlab distributed-spark\jupyterlab
+	docker build -t spark-base distributed-spark\spark-base
+	docker build -t spark-master distributed-spark\spark-master
+	docker build -t spark-worker distributed-spark\spark-worker
+
+distributed_spark_compose:
+	docker-compose -f distributed-spark/docker-compose.yml up
+
 spark_notebook:
 	-docker rm -f spark-notebook 
 	docker run -it --name spark-notebook --rm -d -p 8888:8888 -v $(CURDIR)/data_wrangling:/home/pitfox/data spark-notebook

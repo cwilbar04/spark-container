@@ -1,6 +1,8 @@
 wheel
-numpy
+wget
+pyspark
 jupyterlab
+numpy
 pandas
 pyarrow
 findspark
