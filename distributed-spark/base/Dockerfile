@@ -7,7 +7,7 @@ ARG openjdk_version="14"
 RUN mkdir -p ${shared_workspace}/data && \
     apt-get -y update && \
     apt-get install --no-install-recommends -y \
-    python3 \
+    python \
     curl \
     tini \
     wget \

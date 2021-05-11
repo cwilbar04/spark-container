@@ -20,6 +20,15 @@ venv: venv_create venv_activate
 data_wrangling_container_build:
 	docker build -t spark-notebook data_wrangling
 
+data_wrangling_container_push:
+	docker image tag 
+	docker image push spark-notebook
+
+spark_notebook:
+	-docker rm -f spark-notebook 
+	docker run -it --name spark-notebook --rm -p 8888:8888 -v $(CURDIR)/data_wrangling:/home/data spark-notebook
+	# docker exec -u pitfox spark-notebook jupyter notebook --ip=0.0.0.0 --no-browser 
+
 distributed_spark_build:
 	docker build -t base distributed-spark\base
 	docker build -t jupyterlab distributed-spark\jupyterlab
@@ -30,9 +39,6 @@ distributed_spark_build:
 distributed_spark_compose:
 	docker-compose -f distributed-spark/docker-compose.yml up
 
-spark_notebook:
-	-docker rm -f spark-notebook 
-	docker run -it --name spark-notebook --rm -d -p 8888:8888 -v $(CURDIR)/data_wrangling:/home/pitfox/data spark-notebook
-	docker exec -u pitfox spark-notebook jupyter notebook --ip=0.0.0.0 --no-browser 
+
 
 all: install lint test

@@ -1,6 +1,10 @@
 wheel
-numpy
+wget
+pyspark
+notebook
+jupyterhub
 jupyterlab
+numpy
 pandas
 pyarrow
-findspark
+beautifulsoup4
