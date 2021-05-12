@@ -21,12 +21,18 @@ data_wrangling_container_build:
 	docker build -t spark-notebook data_wrangling
 
 data_wrangling_container_push:
-	docker image tag 
-	docker image push spark-notebook
+	docker tag spark-notebook:latest cwilbar04/spark-notebook:latest
+	docker push cwilbar04/spark-notebook:latest
+	docker tag spark-notebook:latest gcr.io/spark-container-dev/spark-notebook:latest
+	docker push gcr.io/spark-container-dev/spark-notebook:latest
+
+data_wrangling_container_terraform:
+	terraform -chdir=data_wrangling init
+	terraform -chdir=data_wrangling apply -auto-approve
 
 spark_notebook:
 	-docker rm -f spark-notebook 
-	docker run -it --name spark-notebook --rm -p 8888:8888 -v $(CURDIR)/data_wrangling:/home/data spark-notebook
+	-docker run -it --name spark-notebook --rm -p 8888:8888 -v $(CURDIR)/data_wrangling:/home/data spark-notebook
 	# docker exec -u pitfox spark-notebook jupyter notebook --ip=0.0.0.0 --no-browser 
 
 distributed_spark_build:

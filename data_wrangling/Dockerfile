@@ -1,6 +1,7 @@
 FROM ubuntu:latest
 
 EXPOSE 8888
+ENV PORT=8888
 
 # Install Spark - code modified from https://github.com/jupyter/docker-stacks/blob/master/pyspark-notebook/Dockerfile
 # Spark dependencies
@@ -17,6 +18,7 @@ ARG NB_USER="joyvan"
 ENV APACHE_SPARK_VERSION="${spark_version}" \
     HADOOP_VERSION="${hadoop_version}" \
     HADOOP_MAJOR_VERSION="3"
+
 
 
 RUN apt-get -y update && \
@@ -44,6 +46,7 @@ RUN wget -q $(wget -qO- https://www.apache.org/dyn/closer.lua/spark/spark-${APAC
 # Configure Spark
 ENV SPARK_HOME=/opt/spark \
     PATH=$PATH:$SPARK_HOME/bin \
+    PATH=$PATH:/home/${NB_USER}/.local/bin \
     PYSPARK_PYTHON=python3
 
 RUN echo "alias pyspark=/opt/spark/bin/pyspark" >> ~/.bashrc && \
@@ -81,8 +84,9 @@ RUN \
 
 # Define working directory
 WORKDIR /home/data
-
+RUN mkdir load_files
+COPY /load_files /load_files
 # Define default command
 # Configure container startup
 ENTRYPOINT ["tini", "-g", "--"]
-CMD jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token=
+CMD jupyter lab --ip=0.0.0.0 --port=8888 --no-browser --NotebookApp.token=

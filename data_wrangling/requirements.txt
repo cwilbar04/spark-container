@@ -1,4 +1,3 @@
-wheel
 wget
 pyspark
 notebook
