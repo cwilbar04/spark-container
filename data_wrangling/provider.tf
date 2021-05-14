@@ -1,6 +1,5 @@
 provider "google" {
   credentials = file("./sa.json")
-  project     = ""
+  project     = "spark-container-test"
   region      = "us-central1"
-  version     = "~> 2.5.0"
 }
