@@ -17,11 +17,11 @@ venv_activate:
 
 venv: venv_create venv_activate
 
-data_wrangling_container_build:
-	docker build -t spark-notebook data_wrangling
+client_build:
+	docker build -t client-mode-spark-notebook client-mode
 
-data_wrangling_container_push:
-	docker tag spark-notebook:latest cwilbar04/spark-notebook:latest
+client_push:
+	docker tag client-mode-spark-notebook:latest cwilbar04/spark-notebook:latest
 	docker push cwilbar04/spark-notebook:latest
 	docker tag spark-notebook:latest gcr.io/spark-container-dev/spark-notebook:latest
 	docker push gcr.io/spark-container-dev/spark-notebook:latest

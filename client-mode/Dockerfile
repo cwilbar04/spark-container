@@ -84,8 +84,7 @@ RUN \
 
 # Define working directory
 WORKDIR /home/data
-RUN mkdir load_files
-COPY /load_files /load_files
+COPY load_files/ load_files/
 # Define default command
 # Configure container startup
 ENTRYPOINT ["tini", "-g", "--"]
