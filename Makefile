@@ -21,19 +21,21 @@ client_build:
 	docker build -t client-mode-spark-notebook client-mode
 
 client_push:
-	docker tag client-mode-spark-notebook:latest cwilbar04/spark-notebook:latest
-	docker push cwilbar04/spark-notebook:latest
-	docker tag spark-notebook:latest gcr.io/spark-container-dev/spark-notebook:latest
-	docker push gcr.io/spark-container-dev/spark-notebook:latest
+	docker tag client-mode-spark-notebook:latest cwilbar04/client-mode-spark-notebook:latest
+	docker push cwilbar04/client-mode-spark-notebook:latest
+	docker tag client-mode-spark-notebook:latest gcr.io/${GOOGLE_CLOUD_PROJECT}/client-mode-spark-notebook:latest
+	docker push gcr.io/${GOOGLE_CLOUD_PROJECT}//client-mode-spark-notebook:latest
 
-data_wrangling_container_terraform:
+client_terraform:
 	terraform -chdir=data_wrangling init
 	terraform -chdir=data_wrangling apply -auto-approve
 
-spark_notebook:
-	-docker rm -f spark-notebook 
-	-docker run -it --name spark-notebook --rm -p 8888:8888 -v $(CURDIR)/data_wrangling:/home/data spark-notebook
-	# docker exec -u pitfox spark-notebook jupyter notebook --ip=0.0.0.0 --no-browser 
+client_local_run:
+	-docker rm -f client-mode-spark-notebook 
+	-docker run -it --name client-mode-spark-notebook --rm -p 8888:8888 -v $(CURDIR)/client-mode:/home/data client-mode-spark-notebook
+
+
+
 
 distributed_spark_build:
 	docker build -t base distributed-spark\base
