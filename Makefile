@@ -1,3 +1,6 @@
+env_variables:
+	set GOOGLE_CLOUD_PROJECT=spark-container-test
+
 install:
 	pip install --upgrade pip &&\
 		pip install -r requirements.txt
@@ -34,19 +37,14 @@ client_local_run:
 	-docker rm -f client-mode-spark-notebook 
 	-docker run -it --name client-mode-spark-notebook --rm -p 8888:8888 -v $(CURDIR)/client-mode:/home/data client-mode-spark-notebook
 
+cluster_standalone_build:
+	docker build -t base cluster-mode-standalone\base
+	docker build -t jupyterlab cluster-mode-standalone\jupyterlab
+	docker build -t spark-base cluster-mode-standalone\spark-base
+	docker build -t spark-master cluster-mode-standalone\spark-master
+	docker build -t spark-worker cluster-mode-standalone\spark-worker
 
-
-
-distributed_spark_build:
-	docker build -t base distributed-spark\base
-	docker build -t jupyterlab distributed-spark\jupyterlab
-	docker build -t spark-base distributed-spark\spark-base
-	docker build -t spark-master distributed-spark\spark-master
-	docker build -t spark-worker distributed-spark\spark-worker
-
-distributed_spark_compose:
-	docker-compose -f distributed-spark/docker-compose.yml up
-
-
+cluster_standalone_compose:
+	docker-compose -f cluster-mode-standalone/docker-compose.yml up
 
 all: install lint test
