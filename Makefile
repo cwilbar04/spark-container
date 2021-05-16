@@ -44,6 +44,18 @@ cluster_standalone_build:
 	docker build -t spark-master cluster-mode-standalone\spark-master
 	docker build -t spark-worker cluster-mode-standalone\spark-worker
 
+cluster_standalone_push:
+	docker tag base:latest cwilbar04/spark-cluster-base:latest
+	docker push cwilbar04/spark-cluster-base:latest
+	docker tag jupyterlab:latest cwilbar04/spark-cluster-jupyterlab:latest
+	docker push cwilbar04/spark-cluster-jupyterlab:latest
+	docker tag spark-base:latest cwilbar04/spark-cluster-spark-base:latest
+	docker push cwilbar04/spark-cluster-spark-base:latest
+	docker tag spark-master:latest cwilbar04/spark-cluster-spark-master:latest
+	docker push cwilbar04/spark-cluster-spark-master:latest
+	docker tag spark-worker:latest cwilbar04/spark-cluster-spark-worker:latest
+	docker push cwilbar04/spark-cluster-spark-worker:latest
+
 cluster_standalone_compose:
 	docker-compose -f cluster-mode-standalone/docker-compose.yml up
 
