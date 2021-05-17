@@ -11,15 +11,13 @@ ARG spark_version="3.1.1"
 ARG hadoop_version="3.2"
 ARG spark_checksum="E90B31E58F6D95A42900BA4D288261D71F6C19FA39C1CB71862B792D1B5564941A320227F6AB0E09D946F16B8C1969ED2DEA2A369EC8F9D2D7099189234DE1BE"
 ARG openjdk_version="14"
-ARG NB_UID="1000"
-ARG NB_USER="joyvan"
+ARG nb_uid="1000"
+ARG nb_user="joyvan"
 
 
 ENV APACHE_SPARK_VERSION="${spark_version}" \
     HADOOP_VERSION="${hadoop_version}" \
     HADOOP_MAJOR_VERSION="3"
-
-
 
 RUN apt-get -y update && \
     apt-get install --no-install-recommends -y \
@@ -46,7 +44,7 @@ RUN wget -q $(wget -qO- https://www.apache.org/dyn/closer.lua/spark/spark-${APAC
 # Configure Spark
 ENV SPARK_HOME=/opt/spark \
     PATH=$PATH:$SPARK_HOME/bin \
-    PATH=$PATH:/home/${NB_USER}/.local/bin \
+    PATH=$PATH:/home/${nb_user}/.local/bin \
     PYSPARK_PYTHON=python3
 
 RUN echo "alias pyspark=/opt/spark/bin/pyspark" >> ~/.bashrc && \
@@ -54,14 +52,14 @@ RUN echo "alias pyspark=/opt/spark/bin/pyspark" >> ~/.bashrc && \
 
 # Create NB_USER with name jovyan user with UID=1000 and in the 'users' group
 # and make sure these dirs are writable by the `users` group.
-RUN useradd -l -m -s /bin/bash -N -u $NB_UID $NB_USER && \
+RUN useradd -l -m -s /bin/bash -N -u $nb_uid $nb_user && \
     chmod g+w /etc/passwd
 
 # Add Google Cloud Storage and BigQuery Connectivity
-WORKDIR $SPARK_HOME/conf
-ARG GCS_CONNECTOR_VERSION=2.2.0
-ADD https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop${HADOOP_MAJOR_VERSION}-${GCS_CONNECTOR_VERSION}.jar $SPARK_HOME/jars
-RUN chmod 644 $SPARK_HOME/jars/gcs-connector-hadoop${HADOOP_MAJOR_VERSION}-${GCS_CONNECTOR_VERSION}.jar
+WORKDIR $SPARK_HOME/confs
+ARG gcs_connector_version=2.2.0
+ADD https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop${HADOOP_MAJOR_VERSION}-${gcs_connector_version}.jar $SPARK_HOME/jars
+RUN chmod 644 $SPARK_HOME/jars/gcs-connector-hadoop${HADOOP_MAJOR_VERSION}-${gcs_connector_version}.jar
 ADD https://storage.googleapis.com/spark-lib/bigquery/spark-bigquery-with-dependencies_2.12-0.20.0.jar $SPARK_HOME/jars
 RUN chmod 644 $SPARK_HOME/jars/spark-bigquery-with-dependencies_2.12-0.20.0.jar
 
@@ -73,7 +71,7 @@ RUN cp $SPARK_HOME/conf/spark-defaults.conf.template $SPARK_HOME/conf/spark-defa
     echo spark.hadoop.fs.gs.AbstractFilePath.impl     com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS >> spark-defaults.conf
 
 
-USER $NB_UID
+USER $nb_uid
 # Install Required Python Packages
 COPY requirements.txt requirements.txt
 RUN \

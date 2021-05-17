@@ -34,8 +34,9 @@ client_terraform:
 	terraform -chdir=data_wrangling apply -auto-approve
 
 client_local_run:
+	docker build -t client-mode-spark-notebook client-mode
 	-docker rm -f client-mode-spark-notebook 
-	-docker run -it --name client-mode-spark-notebook --rm -p 8888:8888 -v $(CURDIR)/client-mode:/home/data client-mode-spark-notebook
+	docker run -it --name client-mode-spark-notebook --rm -p 8888:8888 -v $(CURDIR)/client-mode:/home/data client-mode-spark-notebook
 
 cluster_standalone_build:
 	docker build -t base cluster-mode-standalone\base
