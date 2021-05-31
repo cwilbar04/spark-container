@@ -63,7 +63,7 @@ RUN chmod 644 $SPARK_HOME/jars/gcs-connector-hadoop${HADOOP_MAJOR_VERSION}-${gcs
 ADD https://storage.googleapis.com/spark-lib/bigquery/spark-bigquery-with-dependencies_2.12-0.20.0.jar $SPARK_HOME/jars
 RUN chmod 644 $SPARK_HOME/jars/spark-bigquery-with-dependencies_2.12-0.20.0.jar
 
-ARG key_file_path="/home/data/sa.json"
+ARG key_file_path="/var/secrets/google/sa.json"
 ENV GOOGLE_APPLICATION_CREDENTIALS=${key_file_path}
 RUN cp $SPARK_HOME/conf/spark-defaults.conf.template $SPARK_HOME/conf/spark-defaults.conf && \
     echo spark.hadoop.google.cloud.auth.service.account.enable       true >> spark-defaults.conf && \ 
@@ -77,7 +77,6 @@ COPY requirements.txt requirements.txt
 RUN \
     pip3 install --upgrade pip && \
     pip3 install -r requirements.txt && \
-    jupyter notebook --generate-config && \
     jupyter lab clean
 
 # Define working directory

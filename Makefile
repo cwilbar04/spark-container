@@ -1,6 +1,10 @@
 env_variables:
 	set GOOGLE_CLOUD_PROJECT=spark-container-test
 
+secret:
+	kubectl create secret generic google-credentials \
+  --from-file ./sa.json
+
 install:
 	pip install --upgrade pip &&\
 		pip install -r requirements.txt
@@ -12,13 +16,9 @@ test:
 lint:
 	python -m pylint --disable=R,C tests webapp
 
-venv_create: 
+venv: 
 	python -m venv ..\.venv
-
-venv_activate:
-	.\..\.venv\Scripts\activate
-
-venv: venv_create venv_activate
+	@echo VirtualEnv created. Now run .\..\.venv\Scripts\activate
 
 client_build:
 	docker build -t client-mode-spark-notebook client-mode
@@ -27,7 +27,7 @@ client_push:
 	docker tag client-mode-spark-notebook:latest cwilbar04/client-mode-spark-notebook:latest
 	docker push cwilbar04/client-mode-spark-notebook:latest
 	docker tag client-mode-spark-notebook:latest gcr.io/${GOOGLE_CLOUD_PROJECT}/client-mode-spark-notebook:latest
-	docker push gcr.io/${GOOGLE_CLOUD_PROJECT}//client-mode-spark-notebook:latest
+	docker push gcr.io/${GOOGLE_CLOUD_PROJECT}/client-mode-spark-notebook:latest
 
 client_terraform:
 	terraform -chdir=data_wrangling init
