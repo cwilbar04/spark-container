@@ -14,10 +14,13 @@ ARG openjdk_version="14"
 ARG nb_uid="1000"
 ARG nb_user="joyvan"
 
-
 ENV APACHE_SPARK_VERSION="${spark_version}" \
     HADOOP_VERSION="${hadoop_version}" \
-    HADOOP_MAJOR_VERSION="3"
+    HADOOP_MAJOR_VERSION="3" \
+    SPARK_HOME=/opt/spark \
+    PATH=$PATH:$SPARK_HOME/bin \
+    PATH=$PATH:/home/${nb_user}/.local/bin \
+    PYSPARK_PYTHON=python3
 
 RUN apt-get -y update && \
     apt-get install --no-install-recommends -y \
@@ -41,12 +44,6 @@ RUN wget -q $(wget -qO- https://www.apache.org/dyn/closer.lua/spark/spark-${APAC
     mv /opt/spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION} /opt/spark && \
     rm "spark-${APACHE_SPARK_VERSION}-bin-hadoop${HADOOP_VERSION}.tgz"
 
-# Configure Spark
-ENV SPARK_HOME=/opt/spark \
-    PATH=$PATH:$SPARK_HOME/bin \
-    PATH=$PATH:/home/${nb_user}/.local/bin \
-    PYSPARK_PYTHON=python3
-
 RUN echo "alias pyspark=/opt/spark/bin/pyspark" >> ~/.bashrc && \
     echo "alias spark-shell=/opt/spark/bin/spark-shell" >> ~/.bashrc
 
@@ -55,8 +52,17 @@ RUN echo "alias pyspark=/opt/spark/bin/pyspark" >> ~/.bashrc && \
 RUN useradd -l -m -s /bin/bash -N -u $nb_uid $nb_user && \
     chmod g+w /etc/passwd
 
+USER $nb_uid
+# Install Required Python Packages
+COPY requirements.txt requirements.txt
+RUN \
+    pip3 install --upgrade pip && \
+    pip3 install -r requirements.txt && \
+    jupyter lab clean
+
+USER root
 # Add Google Cloud Storage and BigQuery Connectivity
-WORKDIR $SPARK_HOME/confs
+WORKDIR $SPARK_HOME/conf
 ARG gcs_connector_version=2.2.0
 ADD https://storage.googleapis.com/hadoop-lib/gcs/gcs-connector-hadoop${HADOOP_MAJOR_VERSION}-${gcs_connector_version}.jar $SPARK_HOME/jars
 RUN chmod 644 $SPARK_HOME/jars/gcs-connector-hadoop${HADOOP_MAJOR_VERSION}-${gcs_connector_version}.jar
@@ -70,15 +76,7 @@ RUN cp $SPARK_HOME/conf/spark-defaults.conf.template $SPARK_HOME/conf/spark-defa
     echo spark.hadoop.google.cloud.auth.service.account.json.keyfile        ${key_file_path}>> spark-defaults.conf && \
     echo spark.hadoop.fs.gs.AbstractFilePath.impl     com.google.cloud.hadoop.fs.gcs.GoogleHadoopFS >> spark-defaults.conf
 
-
 USER $nb_uid
-# Install Required Python Packages
-COPY requirements.txt requirements.txt
-RUN \
-    pip3 install --upgrade pip && \
-    pip3 install -r requirements.txt && \
-    jupyter lab clean
-
 # Define working directory
 WORKDIR /home/data
 COPY load_files/ load_files/

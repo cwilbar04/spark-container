@@ -1,8 +1,5 @@
 wget
 pyspark
-spark-nlp==3.0.3
-notebook
-jupyterhub
 jupyterlab
 numpy
 pandas
