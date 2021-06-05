@@ -12,10 +12,9 @@ Follow the steps in the [Project Creation Workbook](Project Creation Workbook.ip
 
 
 # Enable Docker to push to GCR
-gcloud auth activate-service-account terraform-service-account@spark-container-dev.iam.gserviceaccount.com --key-file=./data_wrangling/sa.json
+```cmd
+gcloud auth activate-service-account {full-service-account-name}--key-file={path to service account JSON file}
 
 gcloud auth configure-docker
-
-# Install Terraform
-https://learn.hashicorp.com/tutorials/terraform/install-cli
+```
 
