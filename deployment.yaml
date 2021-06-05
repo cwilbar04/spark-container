@@ -1,3 +1,4 @@
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -20,7 +21,7 @@ spec:
         secret:
           secretName: bigquery-credentials
       containers:
-      - image: gcr.io/spark-container-testing/client-mode-spark-notebook:latest
+      - image: gcr.io/spark-container-testing-6/client-mode-spark-notebook:latest
         name: client-mode-spark-notebook
         volumeMounts:
           # name must match the volume name below
